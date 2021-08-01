@@ -17,7 +17,7 @@ module.exports.createUser = async (req, res, next) => {
       return res.status(400).send({ message: error.details[0].message });
 
     const existingUser = await User.findOne({
-      username: req.body.username,
+      username: req.body.username.toLowerCase(),
     });
     if (existingUser)
       return res.status(400).send({ message: "Username already taken! " });
@@ -27,11 +27,10 @@ module.exports.createUser = async (req, res, next) => {
       return res.status(400).send({ message: "Email already exists" });
     }
     const user = new User(req.body);
-    const result = await user.save();
+    const result = await user.save()
     const token = auth.generateAccessToken(result.toJSON());
-    // res.send(result);
     res
-      .status(200)
+      .status(201)
       .send({ message: "User created successfully", token: token });
   } catch (error) {
     console.log(error.message);
@@ -122,7 +121,7 @@ module.exports.getUsers = async (req, res, next) => {
     //   https://stackoverflow.com/questions/12096262/how-to-protect-the-password-field-in-mongoose-mongodb-so-it-wont-return-in-a-qu
     const results = await User.find({}, { __v: 0 })
       .select("-password")
-      .populate("questions")
+      .populate("parcels")
       .exec();
     if (!results.length)
       return res.status(200).send({ message: "No users found!" });
